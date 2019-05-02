@@ -1,0 +1,8 @@
+{
+  "name": "music-app",
+  "integrations": {
+    "cordova": {}
+  },
+  "type": "angular",
+  "id": "d783eef3"
+}
