@@ -1,13 +1,13 @@
 const cors = require('cors');
 const http = require('http');
 const express = require('express');
-const dotenv = require('dotenv');
+const path = require('path');
+const dotenv = require('dotenv').config({ path: path.join(__dirname, '.env') });
 const bodyParser = require('body-parser');
 const request = require('request');
 const CryptoJS = require('crypto-js');
 
 const app = express();
-dotenv.load();
 
 const API_URL = 'https://accounts.spotify.com/api/token';
 const CLIENT_ID = process.env.CLIENT_ID;
