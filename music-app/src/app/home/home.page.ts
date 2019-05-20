@@ -32,7 +32,7 @@ export class HomePage implements OnInit {
     cordova.plugins.spotifyAuth
       .authorize(config)
       .then(response => {
-        console.log("entre a la autenticacion");
+        console.log("entre a la autenticacion asdad");
 
         console.log(response);
         this.result = {
