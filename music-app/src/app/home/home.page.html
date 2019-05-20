@@ -1,12 +1,33 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Ionic Blank</ion-title>
+    <ion-title>Ionic Spotify</ion-title>
+    <ion-buttons end>
+      <button ion-button clear (click)="authWithSpotify()" *ngIf="!loggedIn">
+        Login
+      </button>
+      <button ion-button clear (click)="logout()" *ngIf="loggedIn">
+        Logout
+      </button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content padding>
-  <button ion-button full (click)="authWithSpotify()">
-    Login with Spotify
-  </button>
-  {{ result | json }}
+  <div *ngIf="!loggedIn" text-center padding>
+    Please Login to load your Playlists!
+  </div>
+
+  <ion-list>
+    <button
+      ion-item
+      *ngFor="let item of playlists"
+      (click)="openPlaylist(item)"
+    >
+      <ion-avatar item-start *ngIf="item.images.length > 0">
+        <img [src]="item.images[0].url" />
+      </ion-avatar>
+      {{ item.name }}
+      <p>Tracks: {{ item.tracks.total }}</p>
+    </button>
+  </ion-list>
 </ion-content>
