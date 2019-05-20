@@ -1,15 +1,15 @@
-const cors = require('cors');
-const http = require('http');
-const express = require('express');
-const path = require('path');
-const dotenv = require('dotenv').config({ path: path.join(__dirname, '.env') });
-const bodyParser = require('body-parser');
-const request = require('request');
-const CryptoJS = require('crypto-js');
+const cors = require("cors");
+const http = require("http");
+const express = require("express");
+const path = require("path");
+const dotenv = require("dotenv").config({ path: path.join(__dirname, ".env") });
+const bodyParser = require("body-parser");
+const request = require("request");
+const CryptoJS = require("crypto-js");
 
 const app = express();
 
-const API_URL = 'https://accounts.spotify.com/api/token';
+const API_URL = "https://accounts.spotify.com/api/token";
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const CLIENT_CALLBACK_URL = process.env.CLIENT_CALLBACK_URL;
@@ -36,8 +36,7 @@ const spotifyRequest = params => {
         form: params,
         headers: {
           Authorization:
-            'Basic ' +
-            new Buffer(CLIENT_ID + ':' + CLIENT_SECRET).toString('base64')
+            "Basic " + new Buffer(CLIENT_ID + ":" + CLIENT_SECRET).toString()
         },
         json: true
       },
@@ -61,16 +60,16 @@ const spotifyRequest = params => {
     });
 };
 
-app.post('/exchange', (req, res) => {
+app.post("/exchange", (req, res) => {
   const params = req.body;
   if (!params.code) {
     return res.json({
-      error: 'Parameter missing'
+      error: "Parameter missing"
     });
   }
 
   spotifyRequest({
-    grant_type: 'authorization_code',
+    grant_type: "authorization_code",
     redirect_uri: CLIENT_CALLBACK_URL,
     code: params.code
   })
@@ -88,16 +87,16 @@ app.post('/exchange', (req, res) => {
 });
 
 // Get a new access token from a refresh token
-app.post('/refresh', (req, res) => {
+app.post("/refresh", (req, res) => {
   const params = req.body;
   if (!params.refresh_token) {
     return res.json({
-      error: 'Parameter missing'
+      error: "Parameter missing"
     });
   }
 
   spotifyRequest({
-    grant_type: 'refresh_token',
+    grant_type: "refresh_token",
     refresh_token: decrypt(params.refresh_token)
   })
     .then(session => {
@@ -125,5 +124,5 @@ function decrypt(text) {
 var server = http.createServer(app);
 
 server.listen(process.env.PORT || 5000, function(err) {
-  console.info('listening in http://localhost:8080');
+  console.info("listening in http://localhost:8080");
 });
