@@ -12,12 +12,16 @@ import { AppRoutingModule } from "./app-routing.module";
 
 import { Media } from "@ionic-native/media/ngx";
 import { IonicStorageModule } from "@ionic/storage";
+import { HttpClientModule } from "@angular/common/http";
+
+import { HTTP } from "@ionic-native/http/ngx";
 
 @NgModule({
   declarations: [AppComponent],
   entryComponents: [],
   imports: [
     BrowserModule,
+    HttpClientModule,
     IonicModule.forRoot(),
     AppRoutingModule,
     IonicStorageModule.forRoot()
@@ -26,7 +30,8 @@ import { IonicStorageModule } from "@ionic/storage";
     StatusBar,
     SplashScreen,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    Media
+    Media,
+    HTTP
   ],
   bootstrap: [AppComponent]
 })

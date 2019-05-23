@@ -1,9 +1,12 @@
 import { Component, OnInit } from "@angular/core";
 import { NavController, Platform, LoadingController } from "@ionic/angular";
-import { Headers, RequestOptions, HttpClient } from "@angular/common/http";
+// import { , RequestOptions, HttpClient } from "@angular/common/http";
+import { HTTP } from "@ionic-native/http/ngx";
+
 import SpotifyWebApi from "spotify-web-api-js";
 import { Storage } from "@ionic/storage";
 import { Router } from "@angular/router";
+import { HttpClient } from "@angular/common/http";
 
 declare var cordova: any;
 
@@ -27,7 +30,7 @@ export class HomePage implements OnInit {
     private plt: Platform,
     private loadingCtrl: LoadingController,
     private router: Router,
-    public httpClient: HttpClient
+    public http: HTTP
   ) {
     this.spotifyApi = new SpotifyWebApi();
     this.plt.ready().then(() => {
@@ -40,16 +43,27 @@ export class HomePage implements OnInit {
   }
 
   sendPostRequest(accessToken: string) {
-    const headers = new Headers();
-    headers.append("Accept", "application/json");
-    headers.append("Content-Type", "application/json");
-    const requestOptions = new RequestOptions({ headers });
     let postData = {
       accessToken
     };
-    this.httpClient
-      .post("http://music-app-ec.azurewebsites.net/", postData, requestOptions)
-      .subscribe(data => console.log(data), err => console.log(err));
+    this.http.setHeader(
+      "http://music-app-ec.azurewebsites.net/",
+      "Accept",
+      "application/json"
+    );
+    this.http.setHeader(
+      "http://music-app-ec.azurewebsites.net/",
+      "Content-Type",
+      "application/json"
+    );
+    this.http
+      .post("http://music-app-ec.azurewebsites.net/", postData, {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      })
+      .then(response => {
+        console.log(response);
+      });
   }
 
   ngOnInit() {}
@@ -83,7 +97,7 @@ export class HomePage implements OnInit {
         this.accessToken = accessToken;
         this.loggedIn = true;
         this.spotifyApi.setAccessToken(accessToken);
-        this.sendPostRequest(this.accessToken);
+        // this.sendPostRequest(this.accessToken);
         this.getUserPlaylists();
         this.storage.set("logged_in", true);
       })
