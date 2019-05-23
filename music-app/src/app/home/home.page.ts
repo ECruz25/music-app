@@ -1,4 +1,9 @@
 import { Component, OnInit } from "@angular/core";
+import { NavController, Platform, LoadingController } from "@ionic/angular";
+import { Headers, RequestOptions, HttpClient } from "@angular/common/http";
+import SpotifyWebApi from "spotify-web-api-js";
+import { Storage } from "@ionic/storage";
+import { Router } from "@angular/router";
 
 declare var cordova: any;
 
@@ -9,14 +14,49 @@ declare var cordova: any;
 })
 export class HomePage implements OnInit {
   result = {};
-  constructor() {}
+  data = "";
+  playlists = [];
+  spotifyApi: any;
+  loggedIn = false;
+  loading = false;
+  clientId = "5c3b13a967bc4bf598898a7eaac6e54a";
+  accessToken = null;
+  constructor(
+    public navCtrl: NavController,
+    private storage: Storage,
+    private plt: Platform,
+    private loadingCtrl: LoadingController,
+    private router: Router,
+    public httpClient: HttpClient
+  ) {
+    this.spotifyApi = new SpotifyWebApi();
+    this.plt.ready().then(() => {
+      this.storage.get("logged_in").then(res => {
+        if (res) {
+          this.authWithSpotify(true);
+        }
+      });
+    });
+  }
+
+  sendPostRequest(accessToken: string) {
+    const headers = new Headers();
+    headers.append("Accept", "application/json");
+    headers.append("Content-Type", "application/json");
+    const requestOptions = new RequestOptions({ headers });
+    let postData = {
+      accessToken
+    };
+    this.httpClient
+      .post("http://music-app-ec.azurewebsites.net/", postData, requestOptions)
+      .subscribe(data => console.log(data), err => console.log(err));
+  }
 
   ngOnInit() {}
 
-  authWithSpotify() {
-    console.log("entre a la autenticacion");
-    const config = {
-      clientId: "5c3b13a967bc4bf598898a7eaac6e54a",
+  authWithSpotify(showLoading = false) {
+    const config2 = {
+      clientId: this.clientId,
       redirectUrl: "spotify-app-ec://callback",
       scopes: [
         "streaming",
@@ -27,23 +67,65 @@ export class HomePage implements OnInit {
       tokenExchangeUrl: "https://spotify-app-ec.herokuapp.com/exchange",
       tokenRefreshUrl: "https://spotify-app-ec.herokuapp.com/refresh"
     };
-    console.log({ config });
+    if (showLoading) {
+      // this.loading = this.loadingCtrl.create();
+      // this.loading.present();
+    }
 
     cordova.plugins.spotifyAuth
-      .authorize(config)
-      .then(response => {
-        console.log("entre a la autenticacion asdad");
-
-        console.log(response);
+      .authorize(config2)
+      .then(({ accessToken, encryptedRefreshToken, expiresAt }) => {
         this.result = {
-          access_token: response.accessToken,
-          expires_in: response.expiresAt,
-          ref: response.encryptedRefreshToken
+          access_token: accessToken,
+          expires_in: expiresAt,
+          ref: encryptedRefreshToken
         };
+        this.accessToken = accessToken;
+        this.loggedIn = true;
+        this.spotifyApi.setAccessToken(accessToken);
+        this.sendPostRequest(this.accessToken);
+        this.getUserPlaylists();
+        this.storage.set("logged_in", true);
       })
-      .catch(e => {
-        console.log("Erroooor");
+      .catch((e: any) => {
         console.log(e);
       });
+  }
+  getUserPlaylists() {
+    // this.loading = this.loadingCtrl.create({
+    //   content: "Loading Playlists..."
+    // });
+    // this.loading.present();
+
+    this.spotifyApi.getUserPlaylists().then(
+      data => {
+        if (this.loading) {
+          // this.loading.dismiss();
+        }
+        this.playlists = data.items;
+      },
+      err => {
+        console.error(err);
+        if (this.loading) {
+          // this.loading.dismiss();
+        }
+      }
+    );
+  }
+  openPlaylist(item) {
+    this.storage.set("playlistPage", {
+      playlist: item,
+      accessToken: this.accessToken
+    });
+    // this.navCtrl.navigateForward(["page-slug"], item);
+    return this.router.navigateByUrl("playlist");
+  }
+
+  logout() {
+    cordova.plugins.spotifyAuth.forget();
+
+    this.loggedIn = false;
+    this.playlists = [];
+    this.storage.set("logged_in", false);
   }
 }
